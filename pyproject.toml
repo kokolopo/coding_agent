@@ -25,3 +25,6 @@ build-backend = "hatchling.build"
 
 [tool.crewai]
 type = "crew"
+
+[tool.hatch.build.targets.wheel]
+packages = ["coding_agent"]
