@@ -1,0 +1,112 @@
+design_task:
+  description: >
+    Given the high-level requirements, prepare a detailed design for the engineer.
+    The design must be contained in a single Python module outlining classes and methods with their functionality.
+    Output only the design in markdown format, describing classes and functions clearly.
+    Do NOT include any code or markdown backticks.
+    Requirements: {requirement}
+  expected_output: >
+    Detailed design in markdown format identifying classes and functions in the module.
+  agent: development_lead
+  output_file: output/{module_name}/design.md
+
+backend_coding_task:
+  description: >
+    Implement backend Python code strictly following the design provided.
+    Output only pure Python code, ready to save as a .py file and execute directly.
+    Do NOT include markdown, backticks, or any commentary.
+    Address any reviewer comments below:
+    \n\n---------------------------------------\n\n
+    {review_comments}
+    \n\n---------------------------------------\n\n
+    Requirement:
+    {requirement}
+  expected_output: >
+    Pure Python backend code only, no markdown or backticks. no ```pyhton.
+  agent: backend_engineer
+  output_file: output/{module_name}/backend.py
+  context:
+    - design_task
+
+frontend_coding_task:
+  description: >
+    Implement the frontend UI using Gradio as per the design.
+    Import and use the backend module named "backend" for backend calls.
+    Output only pure Python code, no markdown, backticks, or headers.
+    Address any reviewer comments below:
+    \n\n---------------------------------------\n\n
+    {review_comments}
+    \n\n---------------------------------------\n\n
+    Requirement:
+    {requirement}
+  expected_output: >
+    Pure Python frontend code only, no markdown or backticks. no ```pyhton.
+  agent: frontend_engineer
+  output_file: output/{module_name}/app.py
+  context:
+    - backend_coding_task
+    - design_task
+
+code_review_task:
+  description: >
+    Review the backend Python code against the development lead's design.
+    Focus on design adherence, code efficiency, and requirement fulfillment.
+    Do NOT review test coverage.
+    Provide concise, on-point feedback.
+    Include a clear pass/fail summary.
+    Latest backend code:
+    \n---------------------------------------\n
+    {backend_code}
+    \n---------------------------------------\n
+    Requirement:
+    {requirement}
+  expected_output: >
+    Code review feedback object in CodeReviewFeedback format and JSON file.
+  agent: code_reviewer
+  output_file: output/{module_name}/backend_code_review_{iteration}.json
+  context:
+    - design_task
+    - backend_coding_task
+
+frontend_code_review_task:
+  description: >
+    Review the frontend Python code against the design.
+    Be lenient; do NOT review test coverage.
+    Provide concise feedback and a clear pass/fail summary.
+    Output only pure markdown, no backticks.
+    Latest frontend code:
+    \n---------------------------------------\n
+    {frontend_code}
+    \n---------------------------------------\n
+    Requirement:
+    {requirement}
+  expected_output: >
+    Code review feedback object in CodeReviewFeedback format.
+  agent: code_reviewer
+  output_file: output/{module_name}/frontend_code_review_{iteration}.json
+  context:
+    - design_task
+    - frontend_coding_task
+
+test_preparation_task:
+  description: >
+    Write comprehensive unit tests covering all edge cases for backend and frontend code.
+    Output only pure Python test code, well documented and logged.
+    Backend module: backend
+    Frontend module: app
+    Backend code:
+    \n---------------------------------------
+    {backend_code}
+    \n---------------------------------------
+    Frontend code:
+    \n---------------------------------------
+    {frontend_code}
+    \n---------------------------------------
+    Requirement:
+    {requirement}
+  expected_output: >
+    Pure Python unit test code only, no markdown or backticks.
+  agent: test_engineer
+  output_file: output/{module_name}/test.py
+  context:
+    - code_review_task
